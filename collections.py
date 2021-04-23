@@ -1,6 +1,6 @@
 import os
 import math
-PATH = os.getcwd() + "\\collection"
+PATH = os.getcwd() + "\\collection0"
 S = 0.75
 
 class Collection:
@@ -32,7 +32,7 @@ class Collection:
         docLen = 0
         for line in file:
             for word in line.split():
-                word = word.strip('.,?!)("') #removes all special characters from each word
+                word = word.strip('.,?!)(}{"') #removes all special characters from each word
                 word = word.strip("'")
                 word = word.lower() #converts all words to lower case
                 if word not in words.keys():

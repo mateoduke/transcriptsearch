@@ -1,9 +1,9 @@
 import os
+import re
 from youtubesearchpython import VideosSearch
 from youtube_transcript_api import YouTubeTranscriptApi
 
 PATH = os.getcwd() + "\\collection"
-
 #returns a list dict w/ 1 key that holds a list of dictionaries for each entry
 
 def format_results(result, addon = ""):
@@ -11,12 +11,9 @@ def format_results(result, addon = ""):
     res = result.result()["result"]
     results = {}
     for i in range(num_results):
-        # title = res[i]["title"].lower()
-        # title = title.replace(" ", "_")
-        # title = title.replace("!", "")
-        # title = title.replace("*", "")
-        # title = title.replace("?", "")
-        title = addon+str(i)
+        title = res[i]["title"].lower()
+        title = re.sub('[^A-Za-z0-9]+','_',title)
+        print(title)
         results[title] = {}
         #results[title]["author"] = res[i]["channel"]["name"]
         results[title]["id"] = res[i]["id"]
@@ -42,7 +39,7 @@ def create_transcripts(results):
             print("couldn't get video transcript")
 
 
-query = "transformers prime"
+query = "pokemon"
 vs = VideosSearch(query,10)
 res = format_results(vs,query)
 create_transcripts(res)
