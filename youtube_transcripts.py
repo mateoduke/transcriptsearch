@@ -33,13 +33,13 @@ def create_transcripts(results):
             trans = YouTubeTranscriptApi.get_transcript(results[titles[i]]["id"])
             file = open(f"{PATH}\\{titles[i]}.txt","w")
             for i in range(len(trans)):
-                file.write(trans[i]["text"])
+                file.write(f"{trans[i]['text']}\n")
             file.close()
         except:
             print("couldn't get video transcript")
 
 
-query = "pokemon"
+query = "tyler1"
 vs = VideosSearch(query,10)
 res = format_results(vs,query)
 create_transcripts(res)
