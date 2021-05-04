@@ -60,6 +60,9 @@ class Display:
         self.btn_get_Similarity = tk.Button(self.frm_data, text = "Get Similarity Score", bg = "green", command = lambda: self.get_similarity_score())
         self.btn_get_Similarity.grid(row = 5, column = 0, sticky = "ew", columnspan = 2)
 
+        self.btn_get_PNScore = tk.Button(self.frm_data, text = "Get Okapi Score", bg = "green", command = lambda: self.get_okapi_score())
+        self.btn_get_PNScore.grid(row = 6, column = 0, sticky = "ew", columnspan = 2)
+
 
 
 
@@ -111,6 +114,20 @@ class Display:
             pn_scores = dict(sorted(pn_scores.items(), key=lambda item: item[1]))
             for key in pn_scores.keys():
                 self.update_console(f"{key}:{pn_scores[key]}", color = "green" if pn_scores[key] > 0 else "snow")
+
+    def get_okapi_score(self):
+        if self.current != "None":
+            self.update_console(f"Getting Okapi Scores for the document [{self.current}] in collection for the query:", color = "green")
+            self.update_console(f"{self.ent_query.get()}")
+            okapi_score = self.collection.getOkapiScore(self.current, self.ent_query.get().lower())
+            self.update_console(f"{self.ent_query.get()}:{okapi_score}")
+        else:
+            self.update_console(f"Getting Okapi Scores for all documents in collection for the query:", color = "green")
+            self.update_console(f"{self.ent_query.get()}")
+            okapi_scores = self.collection.getOkapiScores(self.ent_query.get().lower())
+            okapi_scores = dict(sorted(okapi_scores.items(), key=lambda item: item[1]))
+            for key in okapi_scores.keys():
+                self.update_console(f"{key}:{okapi_scores[key]}", color = "green" if okapi_scores[key] > 0 else "snow")
 
     def get_similarity_score(self):
         if self.current != "None":

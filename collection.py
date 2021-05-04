@@ -169,6 +169,29 @@ class Collection:
             scores[doc] = self.getPNScore(doc,query)
         return scores
 
+    def getOkapiScore(self, doc, query):
+        queryTerms = query.split()
+        score = 0
+        k1 = 1.2
+        b = 0.75
+        k3 = 1000
+
+        for term in queryTerms:
+            if self.getTermFreq(doc, term) > 0:
+                idf = self.getTermIDF(term)
+                tf = self.getTermFreq(doc, term)
+                qf = self.getQueryTermCount(query, term)
+                weight = ((k1 + 1)*tf) / (k1*((1-b) + (b*self.collection[doc]["length"]/self.avg_doc_len)) + tf)
+                tWeight = (k3 + 1)*qf / (k3 + qf)
+                score += idf * weight * tWeight
+        return score
+
+    def getOkapiScores(self, query):
+        scores = {}
+        for doc in self.collection.keys():
+            scores[doc] = self.getOkapiScore(doc, query)
+        return scores
+
     def __str__(self):
         return f"Docs in collection: {self.documents}\nAverage DocLength: {self.avg_doc_len}"
 
@@ -183,6 +206,7 @@ if __name__ == "__main__":
         if inp == "-1":
             done = True
         else:
-            print(collection.getTotalOccur(inp))
+            #print(collection.getTotalOccur(inp))
             #print(collection.getCollectionSimilarity(inp))
             #print(collection.getPNScores(inp))
+            print(collection.getOkapiScores(inp))
