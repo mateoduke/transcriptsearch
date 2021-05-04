@@ -1,10 +1,11 @@
 import os
 import math
-PATH = os.getcwd() + "\\collection0"
+PATH = os.getcwd() + "\\collection"
 S = 0.75
 
 class Collection:
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
         self.setup()
 
     def setup(self):
@@ -12,7 +13,7 @@ class Collection:
             os.mkdir(PATH)
         self.getDocuments()
         self.createCollection()
-        
+
 
     def getDocuments(self):
         self.documents = os.listdir(PATH)
@@ -27,7 +28,7 @@ class Collection:
             (dict) -> map of every word in the document & their number of occurences
             (int)  -> representing the number of terms in the document
         """
-        file = open(PATH+"\\"+filename,"r") 
+        file = open(PATH+"\\"+filename,"r")
         words = {}
         docLen = 0
         for line in file:
@@ -51,10 +52,11 @@ class Collection:
         for doc in self.documents:
             collection[doc] = {}
             collection[doc]["terms"], collection[doc]["length"] = self.getDocumentTerms(doc)
-            total += collection[doc]["length"] 
+            total += collection[doc]["length"]
         self.collection = collection
         if total > 0:
-            self.avg_doc_len = total/self.doc_num
+            self.avg_doc_len = round(total/self.doc_num,2)
+            print(self.avg_doc_len)
         else:
             self.avg_doc_len = 0
 
@@ -78,7 +80,7 @@ class Collection:
         Returns:
             (int)  -> Number of times a word occurs in a document
         """
-        if term.lower() in self.collection[doc]["terms"].keys():
+        if term in self.collection[doc]["terms"].keys():
             return self.collection[doc]["terms"][term.lower()]
         else:
             return 0
@@ -103,7 +105,7 @@ class Collection:
             return math.log10((self.doc_num+1)/self.getDocFreq(term))
         else:
             return 0
-    
+
     def getQueryIDF(self, query):
         q_list = query.split()
         q_freq = {}
@@ -119,7 +121,7 @@ class Collection:
             #print(self.getTermFreq(doc,term), q_freq[term], q_idf[term])
             score += self.getTermFreq(doc,term) * q_freq[term] * q_idf[term]
         return score
-    
+
     def getCollectionSimilarity(self,query):
         scores = {}
         for doc in self.collection.keys():
@@ -147,6 +149,20 @@ class Collection:
                 score += 0
         return score
 
+    def getQueryTotalOccur(self, query):
+        q_list = query.split()
+        q_total = {}
+        for term in q_list:
+            q_total[term] = self.getTotalOccur(term)
+        return q_total
+
+    def getTotalOccur(self, term):
+        total = 0
+        for key in self.collection.keys():
+            if term in self.collection[key]["terms"].keys():
+                total += self.collection[key]["terms"][term]
+        return total
+
     def getPNScores(self, query):
         scores = {}
         for doc in self.collection.keys():
@@ -167,4 +183,6 @@ if __name__ == "__main__":
         if inp == "-1":
             done = True
         else:
-            print(collection.getPNScores(inp))
+            print(collection.getTotalOccur(inp))
+            #print(collection.getCollectionSimilarity(inp))
+            #print(collection.getPNScores(inp))
