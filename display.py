@@ -1,10 +1,17 @@
 import tkinter as tk
 from collection import Collection
 from youtube_transcripts import *
+from threading import Thread
+import webbrowser
+import ctypes
+
+def popup(title,text,style):
+    return ctypes.windll.user32.MessageBoxW(0, text, title, style)
 
 _FONT_BASIC = ("Helvetica", "12")
 _FONT_CURRENT = ("Helvetica","10", "bold")
 _FONT_LARGE = ("Helvetica", "12" , "bold")
+
 
 class Display:
     def __init__(self, master):
@@ -69,7 +76,7 @@ class Display:
 
         self.btn_get_collection = tk.Button(self.master, text = "Initialize The Collection", font = _FONT_BASIC, bg = "slate blue", command = lambda: self.scrlcol_links.update())
         self.btn_get_collection.grid(row = 3, column = 0, sticky = "ew")
-        self.btn_delete_collection = tk.Button(self.master, text = "Delete Collection", font = _FONT_BASIC, bg = "red", command = lambda: self.scrlcol_links.remove_buttons())
+        self.btn_delete_collection = tk.Button(self.master, text = "Delete Collection", font = _FONT_BASIC, bg = "red", command = lambda: self.clear_collection())
         self.btn_delete_collection.grid(row = 3, column = 1, sticky = "ew")
         self.btn_clear_active = tk.Button(self.master, text = "Clear Active Document", font = _FONT_BASIC, bg = "red", command = lambda: self.update_current_label("None"))
         self.btn_clear_active.grid(row = 5, column = 0, sticky = "ew", columnspan = 2)
@@ -144,18 +151,37 @@ class Display:
                 self.update_console(f"{key}:{s_scores[key]}", color = "green" if s_scores[key] > 0 else "snow")
 
     def update_current_label(self, current):
-        self.current = current
-        self.lbl_current["text"] = f"Active Document: {self.current}"
-        self.update_console(f"Setting Active Document: {self.current}", color = "cyan")
+        if self.current != current:
+            self.current = current
+            self.lbl_current["text"] = f"Active Document: {self.current}"
+            self.update_console(f"Setting Active Document: {self.current}", color = "cyan")
+        else:
+            if self.current != "None":
+                f = open(PATH+"\\"+self.current, "r")
+                url = f.readline()
+                f.close()
+                self.update_console(f"Opening url for [{self.current}]: {url}", color = "green")
+                webbrowser.open(url,2)
+
 
     def search_for_transcripts(self):
+        """
+        Calls the
+        """
         query = self.ent_search.get()
         self.update_console(f"Searching for youtube videos by query: {query}")
-        vs = VideosSearch(query,10)
+        vs = VideosSearch(query,20)
         res = format_results(vs,query)
-        aquired = create_transcripts(res, parent = self)
-        self.update_console(f"Completed Transcript retrieval, retrieved: {aquired} transcripts")
-        self.scrlcol_links.update()
+        thread = Thread(target = create_transcripts, args=(res, self))
+        thread.start()
+        self.monitor(thread)
+
+
+    def monitor(self, thread):
+        if thread.is_alive():
+            self.master.after(100, lambda : self.monitor(thread))
+        else:
+            self.scrlcol_links.update()
 
     def update_console(self,message,color = "snow"):
         """
@@ -184,6 +210,14 @@ class Display:
         self.text_console.config(state = "normal")
         self.text_console.delete("1.0", tk.END)
         self.text_console.config(state = "disabled")
+
+    def clear_collection(self):
+        pop = popup("Confirm", "Are you sure you want to delete the collection?", 4)
+        if pop == 6:
+            self.collection.delete_collection_documents()
+            self.scrlcol_links.update()
+        else:
+            pass
 
 class ScrollCollection:
     def __init__(self,parent, parent_class):

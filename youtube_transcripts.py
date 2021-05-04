@@ -26,6 +26,7 @@ def create_transcripts(results, parent = None):
         try:
             trans = YouTubeTranscriptApi.get_transcript(results[titles[i]]["id"])
             file = open(f"{PATH}\\{titles[i]}.txt","w")
+            file.write(f"{results[titles[i]]['link']}\n")
             for j in range(len(trans)):
                 file.write(f"{trans[j]['text']}\n")
             file.close()
@@ -33,7 +34,6 @@ def create_transcripts(results, parent = None):
                 parent.update_console(f"Aquired Transcript for: {titles[i]}")
             total += 1
         except:
-            print(i)
             if parent:
                 parent.update_console(f"Could not get video transcript for: {titles[i]}", color = "red")
-    return total
+    parent.update_console(f"Retrieved: [{total}] transcripts", color = "green")

@@ -14,6 +14,9 @@ class Collection:
         self.getDocuments()
         self.createCollection()
 
+    def delete_collection_documents(self):
+        for doc in os.listdir(PATH):
+            os.remove(PATH+"\\"+doc)
 
     def getDocuments(self):
         self.documents = os.listdir(PATH)
@@ -32,15 +35,16 @@ class Collection:
         words = {}
         docLen = 0
         for line in file:
-            for word in line.split():
-                word = word.strip('.,?!)(}{"') #removes all special characters from each word
-                word = word.strip("'")
-                word = word.lower() #converts all words to lower case
-                if word not in words.keys():
-                    words[word] = 1
-                else:
-                    words[word] += 1
-                docLen+=1
+            if not "http" in line:
+                for word in line.split():
+                    word = word.strip('.,?!)(}{"') #removes all special characters from each word
+                    word = word.strip("'")
+                    word = word.lower() #converts all words to lower case
+                    if word not in words.keys():
+                        words[word] = 1
+                    else:
+                        words[word] += 1
+                    docLen+=1
         return words, docLen
 
     def createCollection(self):
