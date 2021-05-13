@@ -1,5 +1,6 @@
 import os
 import math
+from collections import Counter
 PATH = os.getcwd() + "\\collection"
 S = 0.75
 
@@ -195,6 +196,31 @@ class Collection:
         for doc in self.collection.keys():
             scores[doc] = self.getOkapiScore(doc, query)
         return scores
+
+    def getDocumentRank(self,doc,query):
+        pn = self.getPNScore(doc,query)
+        okapi = self.getOkapiScore(doc,query)
+        if similarity>0 and pn>0 and okapi>0:
+            return (pn + okapi)/2
+        else:
+            return 0
+
+    def getDocumentRanks(self,query):
+        scores = {}
+        for doc in self.collection.keys():
+            scores[doc] = self.getDocumentRank(doc, query)
+        return scores
+
+    def getMostRelevent(self, query, num_results):
+        scores = self.getDocumentRanks(query)
+        k = Counter(scores)
+        high = k.most_common(num_results)
+        relevant = {}
+        for i in high:
+            relevant[i[0]] = i[1]
+        return relevant
+
+
 
     def __str__(self):
         return f"Docs in collection: {self.documents}\nAverage DocLength: {self.avg_doc_len}"

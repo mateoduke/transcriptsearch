@@ -58,17 +58,23 @@ class Display:
         self.ent_query = tk.Entry(self.frm_data)
         self.ent_query.grid(row = 2, column = 1,sticky = "ew")
 
-        self.btn_get_basic_data = tk.Button(self.frm_data, text = "Get DocFreq, Term Freq, and Total Occurences", bg = "green", command = lambda: self.get_basic_query_data())
+        self.btn_get_basic_data = tk.Button(self.frm_data, text = "Get DocFreq, Term Freq, and Total Occurences", bg = "green", command = lambda: self.get_basic_query_data(), font = _FONT_LARGE)
         self.btn_get_basic_data.grid(row = 3, column = 0, sticky = "ew", columnspan = 2)
 
-        self.btn_get_PNScore = tk.Button(self.frm_data, text = "Get PN Score", bg = "green", command = lambda: self.get_pn_score())
+        self.btn_get_PNScore = tk.Button(self.frm_data, text = "Get PN Score", bg = "green", command = lambda: self.get_pn_score(), font = _FONT_LARGE)
         self.btn_get_PNScore.grid(row = 4, column = 0, sticky = "ew", columnspan = 2)
 
-        self.btn_get_Similarity = tk.Button(self.frm_data, text = "Get Similarity Score", bg = "green", command = lambda: self.get_similarity_score())
+        self.btn_get_Similarity = tk.Button(self.frm_data, text = "Get Similarity Score", bg = "green", command = lambda: self.get_similarity_score(), font = _FONT_LARGE)
         self.btn_get_Similarity.grid(row = 5, column = 0, sticky = "ew", columnspan = 2)
 
-        self.btn_get_PNScore = tk.Button(self.frm_data, text = "Get Okapi Score", bg = "green", command = lambda: self.get_okapi_score())
+        self.btn_get_PNScore = tk.Button(self.frm_data, text = "Get Okapi Score", bg = "green", command = lambda: self.get_okapi_score(), font = _FONT_LARGE)
         self.btn_get_PNScore.grid(row = 6, column = 0, sticky = "ew", columnspan = 2)
+
+        self.btn_get_DocRanks = tk.Button(self.frm_data, text = "Get Document Ranks", bg = "green", command = lambda: self.get_document_rank(), font = _FONT_LARGE)
+        self.btn_get_DocRanks.grid(row = 7, column = 0, sticky = "ew", columnspan = 2)
+
+        self.btn_get_DocRanks = tk.Button(self.frm_data, text = "Get Most Relevants", bg = "green", command = lambda: self.get_relevant_docs(), font = _FONT_LARGE)
+        self.btn_get_DocRanks.grid(row = 8, column = 0, sticky = "ew", columnspan = 2)
 
 
 
@@ -150,6 +156,26 @@ class Display:
             for key in s_scores.keys():
                 self.update_console(f"{key}:{s_scores[key]}", color = "green" if s_scores[key] > 0 else "snow")
 
+    def get_document_rank(self):
+        if self.current != "None":
+            self.update_console(f"Getting Document rank for the document [{self.current}] in collection for the query:", color = "green")
+            self.update_console(f"{self.ent_query.get()}")
+            d_rank = self.collection.getDocumentRank(self.current, self.ent_query.get().lower())
+            self.update_console(f"{self.ent_query.get()}:{d_rank}")
+        else:
+            self.update_console(f"Getting Document Ranks for all documents in collection for the query:", color = "green")
+            self.update_console(f"{self.ent_query.get()}")
+            d_ranks = self.collection.getDocumentRanks(self.ent_query.get().lower())
+            d_ranks = dict(sorted(d_ranks.items(), key=lambda item: item[1]))
+            for key in d_ranks.keys():
+                self.update_console(f"{key}:{d_ranks[key]}", color = "green" if d_ranks[key] > 0 else "snow")
+
+    def get_relevant_docs(self):
+        relevants = self.collection.getMostRelevent(self.ent_query.get().lower(), 10)
+        for key in relevants.keys():
+            if relevants[key] > 0:
+                self.update_console(f"{key}:{relevants[key]}", color = "cyan")
+
     def update_current_label(self, current):
         if self.current != current:
             self.current = current
@@ -170,7 +196,7 @@ class Display:
         """
         query = self.ent_search.get()
         self.update_console(f"Searching for youtube videos by query: {query}")
-        vs = VideosSearch(query,20)
+        vs = VideosSearch(query,100)
         res = format_results(vs,query)
         thread = Thread(target = create_transcripts, args=(res, self))
         thread.start()
