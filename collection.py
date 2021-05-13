@@ -200,7 +200,7 @@ class Collection:
     def getDocumentRank(self,doc,query):
         pn = self.getPNScore(doc,query)
         okapi = self.getOkapiScore(doc,query)
-        if and pn>0 and okapi>0:
+        if pn>0 and okapi>0:
             return (pn + okapi)/2
         else:
             return 0
